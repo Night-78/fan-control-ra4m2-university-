@@ -79,11 +79,13 @@ static int key_scan(void)
             R_IOPORT_PinRead(&g_ioport_ctrl, key_pins[i], &lv);
             if (lv == BSP_IO_LEVEL_LOW)
             {
-                while (1) /* 等待松手 */
+                int release_ms = 0;
+                while (1) /* 等待松手，最多等 3 秒防止按键卡死导致整机无响应 */
                 {
                     R_IOPORT_PinRead(&g_ioport_ctrl, key_pins[i], &lv);
                     if (lv == BSP_IO_LEVEL_HIGH) break;
                     R_BSP_SoftwareDelay(10, BSP_DELAY_UNITS_MILLISECONDS);
+                    if (++release_ms >= 300) break;
                 }
                 return i + 1;
             }
